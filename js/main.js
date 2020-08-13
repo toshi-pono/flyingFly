@@ -1,4 +1,4 @@
-import { Game } from "game.js";
+import { Game } from "./game.js";
 
 // グローバル定数
 const screenWidth = 1400;
@@ -9,14 +9,16 @@ let isLoading = false;
 // ********************************************* //
 // *************   素材の読み込み   ************** //
 // ********************************************* //
-const filePos = "../assets";
+const filePos = "../assets/";
 PIXI.loader.add(filePos + "buta.png").load(setup);
 
 function setup() {
   // スプライトの作成
   // PIXI.loader.resources[filePos + "buta.png"].texture
-
+  let game = new Game(screenWidth, screenHeight, filePos);
+  app.stage.addChild(game.pixi);
   isLoading = true;
+  game.animate();
 }
 
 // ********************************************* //
