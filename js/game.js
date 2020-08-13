@@ -26,7 +26,7 @@ class Game {
     for (let i = 0; i < generationCount; i++) {
       this.generateFly();
     }
-    for (let i = 0; i < generationCount; i++) {
+    for (let i = 0; i < 5; i++) {
       this.generateTempura();
     }
   }
@@ -37,7 +37,7 @@ class Game {
   generateFly() {
     this.flys.push(
       // ハエオブジェクトを生成
-      new Fly(PIXI.loader.resources[this.filePos + "buta.png"].texture)
+      new Fly(PIXI.loader.resources[this.filePos + "fly.png"].texture)
     );
     this.container.addChild(this.flys[this.flys.length - 1].pixi);
   }

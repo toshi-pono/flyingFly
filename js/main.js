@@ -10,7 +10,10 @@ let isLoading = false;
 // *************   素材の読み込み   ************** //
 // ********************************************* //
 const filePos = "../assets/";
-PIXI.loader.add(filePos + "buta.png").load(setup);
+PIXI.loader
+  .add(filePos + "buta.png")
+  .add(filePos + "fly.png")
+  .load(setup);
 
 function setup() {
   // スプライトの作成
