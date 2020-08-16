@@ -11,12 +11,16 @@ class Game {
     this.container.x = 0;
     this.container.y = 0;
 
-    this.container.addChild(
-      new PIXI.Graphics()
-        .beginFill(0xffff00)
-        .drawRect(0, 0, screenWidth, screenHeight)
-        .endFill()
-    );
+    let background = new PIXI.Graphics()
+      .beginFill(0xffff00)
+      .drawRect(0, 0, screenWidth, screenHeight)
+      .endFill();
+    this.container.addChild(background);
+    background.interactive = true;
+    function cli(e) {
+      checkHit(e);
+    }
+    background.on("click", cli);
 
     // ゲームのキャラクター描画
     let generationCount = 10;
@@ -48,8 +52,9 @@ class Game {
     );
     this.container.addChild(this.tempuras[this.tempuras.length - 1].pixi);
   }
-  checkHit() {
+  checkHit(e) {
     // enemyが捕まったかを判定
+    console.log(e);
   }
   animate() {
     // ハエの位置更新
