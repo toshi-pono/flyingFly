@@ -1,4 +1,5 @@
 import { Fly, Tempura } from "./enemy.js";
+import { Tool } from "./tool.js";
 
 class Game {
   constructor(screenWidth, screenHeight, filePos) {
@@ -28,12 +29,14 @@ class Game {
     for (let i = 0; i < 5; i++) {
       this.generateTempura();
     }
+    this.tool = new Tool();
+    this.container.addChild(this.tool.pixi);
   }
   get pixi() {
     // pixi描画のオブジェクトを返す
     return this.container;
   }
-  get clickObj() {
+  get eventObj() {
     // クリック判定を付与するオブジェクトを返す
     return this.container;
   }
@@ -60,6 +63,9 @@ class Game {
       this.tempuras[i].checkHit(pos, tool);
     }
   }
+  moveTool(pos, tool) {
+    this.tool.moveData(pos.x, pos.y);
+  }
   start() {
     // ゲーム開始！
     this.animate();
@@ -73,6 +79,9 @@ class Game {
     for (let i = 0; i < this.tempuras.length; i++) {
       this.tempuras[i].update(0);
     }
+    // toolの位置更新
+    this.tool.update();
+
     if (this.gameState) {
       window.requestAnimationFrame(this.animate.bind(this));
     } else {

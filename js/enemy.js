@@ -32,7 +32,7 @@ const locusType = [
 // ハエ
 class Fly {
   constructor(texture) {
-    this.size = 100;
+    this.size = 60;
     this.baseX = generateRandom(1400);
     this.baseY = generateRandom(800);
     this.x = this.baseX;
