@@ -32,7 +32,7 @@ const locusType = [
 // ハエ
 class Fly {
   constructor(texture) {
-    this.size = 60;
+    this.size = 160;
     this.baseX = generateRandom(1400);
     this.baseY = generateRandom(800);
     this.x = this.baseX;
@@ -45,7 +45,9 @@ class Fly {
     this.animDirection = generateRandom(1);
 
     this.state = 0; // 0:通常 2:やられた　-1:オブジェクト破棄命令
-
+    // ***********
+    this.hitbox = new ViewHitBox(this.size);
+    // ***********
     this.flyView = new FlyView(this.x, this.y, this.size, texture);
   }
   get pixi() {
@@ -98,6 +100,9 @@ class Fly {
     this.animCounter++;
     this.animCounter %= this.animCycle;
     // オブジェクト描画位置更新
+    // ***********
+    this.hitbox.animate(this.x, this.y);
+    // ***********
     this.flyView.animate(this.x, this.y);
   }
 }
@@ -193,6 +198,23 @@ class TempuraView {
   animate(x, y) {
     this.view.x = x;
     this.view.y = y;
+  }
+}
+
+class ViewHitBox {
+  constructor(size) {
+    this.size = size;
+    console.log(size);
+    this.view = new PIXI.Graphics()
+      .beginFill(0x333333)
+      .drawRect(0, 0, size, size)
+      .endFill();
+    this.view.x = 0;
+    this.view.y = 0;
+  }
+  animate(x, y) {
+    this.view.x = x - this.size / 2;
+    this.view.y = y - this.size / 2;
   }
 }
 

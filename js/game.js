@@ -19,18 +19,20 @@ class Game {
     this.container.addChild(background);
 
     // ゲームのキャラクター描画
-    let generationCount = 10;
+    let generationCount = 1;
     this.flys = new Array();
     this.tempuras = new Array();
 
     for (let i = 0; i < generationCount; i++) {
       this.generateFly();
     }
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 0; i++) {
       this.generateTempura();
     }
     this.tool = new Tool();
     this.container.addChild(this.tool.pixi);
+    // イベント有効
+    this.onEventLisner();
   }
   get pixi() {
     // pixi描画のオブジェクトを返す
@@ -40,11 +42,34 @@ class Game {
     // クリック判定を付与するオブジェクトを返す
     return this.container;
   }
+  onEventLisner() {
+    // イベントを有効にする
+    this.eventObj.interactive = true;
+    this.eventObj
+      .on("click", (event) => {
+        this.checkHit(event.data.getLocalPosition(event.currentTarget));
+      })
+      .on("mousemove", (event) => {
+        this.moveTool(event.data.getLocalPosition(event.currentTarget));
+      })
+      .on("touchstart", (event) => {
+        this.checkHit(event.data.getLocalPosition(event.currentTarget));
+      });
+    addEventListener("keydown", () => {
+      if (event.keyCode == 32) {
+        //spaceKey
+        this.tool.changeTool();
+      }
+    });
+  }
   generateFly() {
     this.flys.push(
       // ハエオブジェクトを生成
       new Fly(PIXI.loader.resources[this.filePos + "fly.png"].texture)
     );
+    // ***********
+    this.container.addChild(this.flys[this.flys.length - 1].hitbox.view);
+    // ***********
     this.container.addChild(this.flys[this.flys.length - 1].pixi);
   }
   generateTempura() {
@@ -54,17 +79,20 @@ class Game {
     );
     this.container.addChild(this.tempuras[this.tempuras.length - 1].pixi);
   }
-  checkHit(pos, tool) {
+  checkHit(pos) {
     // enemyが捕まったかの処理を呼び出す
     for (let i = 0; i < this.flys.length; i++) {
-      this.flys[i].checkHit(pos, tool);
+      this.flys[i].checkHit(pos, this.tool.nowTool);
     }
     for (let i = 0; i < this.tempuras.length; i++) {
-      this.tempuras[i].checkHit(pos, tool);
+      this.tempuras[i].checkHit(pos, this.tool.nowTool);
     }
   }
-  moveTool(pos, tool) {
+  moveTool(pos) {
     this.tool.moveData(pos.x, pos.y);
+  }
+  changeTool(state) {
+    this.tool.changeTool(state);
   }
   start() {
     // ゲーム開始！
@@ -80,6 +108,7 @@ class Game {
       this.tempuras[i].update(0);
     }
     // toolの位置更新
+
     this.tool.update();
 
     if (this.gameState) {

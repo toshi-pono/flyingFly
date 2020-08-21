@@ -1,7 +1,7 @@
 class Tool {
   constructor() {
     this.size = 200;
-    this.state = 1; //0:はし 1:はえたたき
+    this.nowTool = 1; //0:はし 1:はえたたき
     this.view = new PIXI.Graphics()
       .beginFill(0x777777)
       .drawRect(0, 0, this.size, this.size)
@@ -18,7 +18,15 @@ class Tool {
     this.x = x - this.size / 2;
     this.y = y - this.size / 2;
   }
+  changeTool() {
+    this.nowTool = 1 - this.nowTool;
+  }
   update() {
+    if (this.nowTool == 1) {
+      this.view.visible = true;
+    } else {
+      this.view.visible = false;
+    }
     this.view.x = this.x;
     this.view.y = this.y;
   }
