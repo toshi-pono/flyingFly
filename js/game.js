@@ -4,7 +4,7 @@ class Game {
   constructor(screenWidth, screenHeight, filePos) {
     this.level = 1; // ステージ状態のレベル
     this.animationCounter = 0; // ゲーム内部カウンター
-
+    this.gameState = true; // true:ゲーム中 false:ゲーム終了
     this.filePos = filePos;
     // ゲームのコンテナ作成
     this.container = new PIXI.Container();
@@ -16,11 +16,6 @@ class Game {
       .drawRect(0, 0, screenWidth, screenHeight)
       .endFill();
     this.container.addChild(background);
-    background.interactive = true;
-    function cli(e) {
-      checkHit(e);
-    }
-    background.on("click", cli);
 
     // ゲームのキャラクター描画
     let generationCount = 10;
@@ -38,6 +33,10 @@ class Game {
     // pixi描画のオブジェクトを返す
     return this.container;
   }
+  get clickObj() {
+    // クリック判定を付与するオブジェクトを返す
+    return this.container;
+  }
   generateFly() {
     this.flys.push(
       // ハエオブジェクトを生成
@@ -52,9 +51,18 @@ class Game {
     );
     this.container.addChild(this.tempuras[this.tempuras.length - 1].pixi);
   }
-  checkHit(e) {
-    // enemyが捕まったかを判定
-    console.log(e);
+  checkHit(pos, tool) {
+    // enemyが捕まったかの処理を呼び出す
+    for (let i = 0; i < this.flys.length; i++) {
+      this.flys[i].checkHit(pos, tool);
+    }
+    for (let i = 0; i < this.tempuras.length; i++) {
+      this.tempuras[i].checkHit(pos, tool);
+    }
+  }
+  start() {
+    // ゲーム開始！
+    this.animate();
   }
   animate() {
     // ハエの位置更新
@@ -65,7 +73,15 @@ class Game {
     for (let i = 0; i < this.tempuras.length; i++) {
       this.tempuras[i].update(0);
     }
-    window.requestAnimationFrame(this.animate.bind(this));
+    if (this.gameState) {
+      window.requestAnimationFrame(this.animate.bind(this));
+    } else {
+      // ゲーム終了
+      this.finish();
+    }
+  }
+  finish() {
+    // ゲーム終了の処理
   }
 }
 

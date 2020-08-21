@@ -1,6 +1,20 @@
 function generateRandom(Maxnum, Minnum = 0) {
   return Math.floor(Math.random() * (Maxnum - Minnum + 1)) + Minnum;
 }
+function isHasiHit(objx, objy, playx, playy, size) {
+  if (Math.abs(objx - playx) <= size / 2 && Math.abs(objy - playy) <= size / 2)
+    return true;
+  else return false;
+}
+function isTatakiHit(objx, objy, playx, playy, size) {
+  const TatakiMax = 200 / 2 + size / 2;
+  if (
+    Math.abs(objx - playx) <= TatakiMax &&
+    Math.abs(objy - playy) <= TatakiMax
+  )
+    return true;
+  else return false;
+}
 const locusType = [
   { angleRatioX: 1, angleRatioY: 1, phaseDiff: 1 },
   { angleRatioX: 1, angleRatioY: 1, phaseDiff: 2 },
@@ -14,10 +28,11 @@ const locusType = [
   { angleRatioX: 2, angleRatioY: 3, phaseDiff: 1 },
   { angleRatioX: 2, angleRatioY: 3, phaseDiff: 3 },
 ];
+
 // ハエ
 class Fly {
   constructor(texture) {
-    const size = 100;
+    this.size = 100;
     this.baseX = generateRandom(1400);
     this.baseY = generateRandom(800);
     this.x = this.baseX;
@@ -28,14 +43,34 @@ class Fly {
     this.animAmpX = generateRandom(900, 100);
     this.animAmpY = generateRandom(500, 100);
     this.animDirection = generateRandom(1);
-    this.isDeath = false;
-    this.flyView = new FlyView(this.x, this.y, size, texture);
+
+    this.state = 0; // 0:通常 2:やられた　-1:オブジェクト破棄命令
+
+    this.flyView = new FlyView(this.x, this.y, this.size, texture);
   }
   get pixi() {
     return this.flyView.view;
   }
-  update(state) {
-    switch (state) {
+  get isDeath() {
+    if (this.state != 0) return true;
+    else return false;
+  }
+  checkHit(pos, tool) {
+    // あたり判定処理
+    if (tool == 0) {
+      if (isHasiHit(this.x, this.y, pos.x, pos.y, this.size)) {
+        // やられたー
+        this.state = 2;
+      }
+    } else {
+      if (isTatakiHit(this.x, this.y, pos.x, pos.y, this.size)) {
+        // やられたー
+        this.state = 2;
+      }
+    }
+  }
+  update() {
+    switch (this.state) {
       case 0:
         // 通常
         const angle =
@@ -92,14 +127,32 @@ class Tempura {
     this.dy = Math.ceil(2 * Math.sin(directionAngle));
     this.animCounter = 0;
 
-    this.isDeath = false;
+    this.state = 0; // 0:通常 1:おいしく食べる 2:やられた(ゴミ）　-1:オブジェクト破棄命令
     this.tempuraView = new TempuraView(this.x, this.y, this.size, texture);
   }
   get pixi() {
     return this.tempuraView.view;
   }
-  update(state) {
-    switch (state) {
+  get isDeath() {
+    if (this.state != 0) return true;
+    else return false;
+  }
+  checkHit(pos, tool) {
+    // あたり判定処理
+    if (tool == 0) {
+      if (isHasiHit(this.x, this.y, pos.x, pos.y, this.size)) {
+        // 食べた。おいしい。
+        this.state = 1;
+      }
+    } else {
+      if (isTatakiHit(this.x, this.y, pos.x, pos.y, this.size)) {
+        // ゴミになってしまった。悲しい。
+        this.state = 2;
+      }
+    }
+  }
+  update() {
+    switch (this.state) {
       case 0:
         // 通常
         this.x += this.dx;
@@ -114,10 +167,12 @@ class Tempura {
 
       case 1:
         // おいしく食べる
+        // this.pixi.visible = false;
         break;
 
       case 2:
         // 悲しみ
+        // this.pixi.visible = false;
         break;
     }
     this.animCounter++;

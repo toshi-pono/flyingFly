@@ -6,6 +6,8 @@ const screenHeight = 800;
 
 // グローバル変数
 let isLoading = false;
+let game;
+let tool = 1; // 0:はし 1:はえ叩き
 // ********************************************* //
 // *************   素材の読み込み   ************** //
 // ********************************************* //
@@ -18,10 +20,19 @@ PIXI.loader
 function setup() {
   // スプライトの作成
   // PIXI.loader.resources[filePos + "buta.png"].texture
-  let game = new Game(screenWidth, screenHeight, filePos);
+  game = new Game(screenWidth, screenHeight, filePos);
   app.stage.addChild(game.pixi);
+  // ゲーム用にクリック判定処理の追加
+  game.clickObj.interactive = true;
+  game.clickObj.on("click", onClick).on("touchstart", onClick);
+  // ローディング完了→ゲーム開始
   isLoading = true;
-  game.animate();
+  game.start();
+}
+
+// イベント用関数
+function onClick(event) {
+  game.checkHit(event.data.getLocalPosition(event.currentTarget), tool);
 }
 
 // ********************************************* //
