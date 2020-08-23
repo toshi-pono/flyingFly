@@ -2,12 +2,15 @@ function generateRandom(Maxnum, Minnum = 0) {
   return Math.floor(Math.random() * (Maxnum - Minnum + 1)) + Minnum;
 }
 function isHasiHit(objx, objy, playx, playy, size) {
-  if (Math.abs(objx - playx) <= size / 2 && Math.abs(objy - playy) <= size / 2)
+  if (
+    Math.abs(objx - playx) <= size / 2 + 10 &&
+    Math.abs(objy - playy) <= size / 2 + 10
+  )
     return true;
   else return false;
 }
 function isTatakiHit(objx, objy, playx, playy, size) {
-  const TatakiMax = 200 / 2 + size / 2;
+  const TatakiMax = 250 / 2 + size / 2;
   if (
     Math.abs(objx - playx) <= TatakiMax &&
     Math.abs(objy - playy) <= TatakiMax
@@ -32,7 +35,8 @@ const locusType = [
 // ハエ
 class Fly {
   constructor(texture) {
-    this.size = 160;
+    this.size = 80;
+    this.addHitSize = 50;
     this.baseX = generateRandom(1400);
     this.baseY = generateRandom(800);
     this.x = this.baseX;
@@ -45,6 +49,7 @@ class Fly {
     this.animDirection = generateRandom(1);
 
     this.state = 0; // 0:通常 2:やられた　-1:オブジェクト破棄命令
+    this.point = 0; // 0:通常 1:加点 2:失点 -1:処理完了（破棄待ち）
     // ***********
     this.hitbox = new ViewHitBox(this.size);
     // ***********
@@ -53,23 +58,28 @@ class Fly {
   get pixi() {
     return this.flyView.view;
   }
-  get isDeath() {
-    if (this.state != 0) return true;
-    else return false;
-  }
   checkHit(pos, tool) {
     // あたり判定処理
-    if (tool == 0) {
-      if (isHasiHit(this.x, this.y, pos.x, pos.y, this.size)) {
+    if (tool == 0 && this.state == 0) {
+      if (
+        isHasiHit(this.x, this.y, pos.x, pos.y, this.size + this.addHitSize)
+      ) {
         // やられたー
         this.state = 2;
+        this.point = 1;
       }
-    } else {
+    } else if (tool == 1 && this.state == 0) {
       if (isTatakiHit(this.x, this.y, pos.x, pos.y, this.size)) {
         // やられたー
         this.state = 2;
+        this.point = 1;
       }
     }
+  }
+  get reqPoint() {
+    let tmp = this.point;
+    if (this.point >= 1) this.point = -1;
+    return tmp;
   }
   update() {
     switch (this.state) {
@@ -95,12 +105,20 @@ class Fly {
 
       case 2:
         // 悲しみ
+        // TODO:やられるアニメーション
+        // TODO:アニメーション完了&&ポイント加算完了だったら消去
+        break;
+      case -1:
+        // 破棄を待つ
+        // HACK:不要？
         break;
     }
     this.animCounter++;
     this.animCounter %= this.animCycle;
     // オブジェクト描画位置更新
+    // TODO:やられるアニメーションに対応する
     // ***********
+    // HACK:hitboxの表示めんどくさい書き方
     this.hitbox.animate(this.x, this.y);
     // ***********
     this.flyView.animate(this.x, this.y);
@@ -109,6 +127,7 @@ class Fly {
 
 class FlyView {
   constructor(x, y, size, texture) {
+    // TODO:画像サイズとゲームバランスに対応して描画サイズを調整
     this.view = new PIXI.Sprite(texture);
     this.view.anchor.set(0.5);
     this.view.x = x;
@@ -118,6 +137,7 @@ class FlyView {
     this.view.x = x;
     this.view.y = y;
   }
+  // TODO:やられるアニメーション
 }
 
 // 揚げ物
@@ -133,28 +153,32 @@ class Tempura {
     this.animCounter = 0;
 
     this.state = 0; // 0:通常 1:おいしく食べる 2:やられた(ゴミ）　-1:オブジェクト破棄命令
+    this.point = 0; // 0:通常 1:加点 2:失点 -1:処理完了（破棄待ち）
     this.tempuraView = new TempuraView(this.x, this.y, this.size, texture);
   }
   get pixi() {
     return this.tempuraView.view;
   }
-  get isDeath() {
-    if (this.state != 0) return true;
-    else return false;
-  }
   checkHit(pos, tool) {
     // あたり判定処理
-    if (tool == 0) {
+    if (tool == 0 && this.state == 0) {
       if (isHasiHit(this.x, this.y, pos.x, pos.y, this.size)) {
         // 食べた。おいしい。
         this.state = 1;
+        this.point = 1;
       }
-    } else {
+    } else if (tool == 1 && this.state == 0) {
       if (isTatakiHit(this.x, this.y, pos.x, pos.y, this.size)) {
         // ゴミになってしまった。悲しい。
         this.state = 2;
+        this.point = 2;
       }
     }
+  }
+  get reqPoint() {
+    let tmp = this.point;
+    if (this.point >= 1) this.point = -1;
+    return tmp;
   }
   update() {
     switch (this.state) {
