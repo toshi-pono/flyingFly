@@ -9,6 +9,7 @@ const screenHeight = 800;
 let isLoading = false;
 let game;
 let title;
+let eventList = new Array();
 // ********************************************* //
 // *************   素材の読み込み   ************** //
 // ********************************************* //
@@ -21,7 +22,7 @@ PIXI.loader
 
 function setup() {
   // スプライトの作成
-  title = new Title(screenWidth, screenHeight, filePos);
+  title = new Title(screenWidth, screenHeight, filePos, eventList);
   app.stage.addChild(title.pixi);
 
   // ローディング完了→ゲーム開始
@@ -29,9 +30,21 @@ function setup() {
   //game.start();
 }
 
-// イベント作成
-const titleEvent = new Event("title");
+eventList.game = new CustomEvent("game", { state: 0 });
+eventList.title = new CustomEvent("title", { state: 0 });
 
+addEventListener("game", function (e) {
+  if (title) title.pixi.visible = false;
+  game = new Game(screenWidth, screenHeight, filePos);
+  setTimeout(function () {
+    app.stage.addChild(game.pixi); // HACK:これ不要？
+    game.start();
+  }, 20);
+});
+addEventListener("title", function (e) {
+  title = new Title(screenWidth, screenHeight, filePos, eventList);
+  app.stage.addChild(title.pixi); // HACK:これ不要？
+});
 // ********************************************* //
 // *************    ゲームの描画    ************** //
 // ********************************************* //
